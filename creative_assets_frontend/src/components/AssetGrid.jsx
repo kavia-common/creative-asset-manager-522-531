@@ -1,8 +1,29 @@
-import React from 'react';
+import React, { useState } from 'react';
+import { prepareAssetPayload, pushToMeta } from '../services/meta';
 
 // PUBLIC_INTERFACE
 export default function AssetGrid({ assets, loading, onEdit, onDelete }) {
-  /** Grid of assets showing thumbnails and basic metadata */
+  /** Grid of assets showing thumbnails and basic metadata, with Meta push action */
+  const [busyId, setBusyId] = useState(null);
+
+  const handlePush = async (asset) => {
+    try {
+      setBusyId(asset.id);
+      const payload = prepareAssetPayload(asset);
+      const res = await pushToMeta(payload);
+      if (res.success) {
+        alert(`✅ Pushed to Meta Ads Manager: ${res.id}`);
+      } else {
+        alert(`⚠️ ${res.message}`);
+      }
+    } catch (e) {
+      console.error(e);
+      alert('❌ Failed to push to Meta Ads Manager. See console for details.');
+    } finally {
+      setBusyId(null);
+    }
+  };
+
   return (
     <section className="grid" aria-busy={loading} aria-live="polite">
       <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 8 }}>
@@ -31,6 +52,9 @@ export default function AssetGrid({ assets, loading, onEdit, onDelete }) {
               </div>
               <div className="card-actions">
                 <button className="btn" onClick={() => onEdit(asset)} aria-label={`Edit ${asset.name}`}>Edit</button>
+                <button className="btn primary" onClick={() => handlePush(asset)} aria-label={`Push ${asset.name} to Meta`} disabled={busyId === asset.id}>
+                  {busyId === asset.id ? 'Pushing…' : 'Push to Meta'}
+                </button>
                 <button className="btn danger" onClick={() => onDelete(asset)} aria-label={`Delete ${asset.name}`}>Delete</button>
               </div>
             </div>

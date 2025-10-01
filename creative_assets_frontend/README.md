@@ -8,6 +8,7 @@ A lightweight React application for uploading, managing, and browsing creative a
 - Upload and Edit modals with accessible, responsive design
 - Ocean Professional styling: blue primary, amber accents, rounded corners, subtle shadows, smooth transitions
 - Service layer ready for backend/database integration (stubs in `src/services/api.js`)
+- Push to Meta Ads Manager (simulated): from each asset card via "Push to Meta"
 
 ## Getting Started
 
@@ -33,6 +34,23 @@ Key theme tokens (see `src/App.css`):
 - surface: `#ffffff`
 - text: `#111827`
 
+## Meta Ads Manager Integration
+
+A "Push to Meta" button is available on each asset card. The current implementation simulates the push in the browser and checks for the presence of the following environment variables:
+
+- `REACT_APP_META_APP_ID`
+- `REACT_APP_META_ACCESS_TOKEN`
+- `REACT_APP_META_AD_ACCOUNT_ID`
+
+Copy `.env.example` to `.env` and fill in your values to enable simulation:
+
+```
+cp .env.example .env
+```
+
+Important:
+- Do not call the Meta Graph API directly from the browser in production. Implement a backend endpoint (e.g., `POST /integrations/meta/push`) and move the logic there. Then update `src/services/meta.js` to call your backend (see comments in file).
+
 ## Integrating Backend
 
 Replace methods in `src/services/api.js` with real API calls to your backend:
@@ -41,4 +59,6 @@ Replace methods in `src/services/api.js` with real API calls to your backend:
 - `updateAsset(id, updates)` PATCH /assets/:id
 - `deleteAsset(id)` DELETE /assets/:id
 
-No environment variables are required by default. If needed, add them via `.env` and consume within the service layer.
+For Meta:
+- Create a backend endpoint that accepts the prepared payload from `prepareAssetPayload()` and performs the authenticated calls to Meta Graph API using server-side credentials.
+- Never expose sensitive tokens in the frontend.
